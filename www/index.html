@@ -1,0 +1,212 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>[[[FULL_NAME]]]</title>
+
+        <!-- `cordova.js` is required for the `deviceready` event. -->
+        <script src="cordova.js"></script>
+
+        <script src="js/phaser.min.js"></script>
+        <script src="js/common.js"></script>
+        <script src="js/boot.js"></script>
+        <script src="js/load.js"></script>
+        <script src="js/game.js"></script>
+        <script src="js/about.js"></script>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: black">
+        <script>
+var LOGIN_ERROR = 1;
+var LOGIN_CANCEL = 2;
+var LOGIN_SUCCES = 3;
+
+var SOCIAL; // FIXME needs to be loaded before its used.
+var PLATFORM;
+var INTERSTITIAL = {
+    intrst: null,
+
+    createFrom: function (intrst) {
+        this.intrst = intrst;
+        this.intrst.on("load", function(){
+           console.log("loaded interstitial");
+        });
+        this.intrst.on("fail", function(e){
+           console.log("interst failed to load: "+e.message);
+        });
+        this.intrst.on("show", function(){
+           console.log("interst shown a modal content");
+        });
+        this.intrst.on("dismiss", function(){
+           console.log("interst dismissed the modal content");
+        });
+        this.intrst.on("click", function(){
+           console.log("interst clicked");
+        });
+        this.intrst.load();
+    },
+
+    show: function () {
+        if (this.intrst && this.intrst.isReady()) {
+            this.interst.show();
+            this.interst.load();
+        }
+    }
+};
+
+// http://stackoverflow.com/a/10566220
+if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry|IEMobile)/)) {
+  document.addEventListener("deviceready", function() {
+      Cocoon.Ad.configure(
+          DEBUGGING ?
+          {}:
+          {
+              ios: {
+                  banner: "ca-app-pub-1511849776501068/2816753433",
+                  interstitial: "ca-app-pub-1511849776501068/4293486633"
+              },
+              android: {
+                  banner: "ca-app-pub-1511849776501068/6692761838",
+                  interstitial: "ca-app-pub-1511849776501068/6189463839"
+              }
+          }
+      );
+
+      var banner = Cocoon.Ad.createBanner();
+      banner.on("load", function(){
+         console.log("banner loaded");
+         banner.show();
+      });
+      banner.on("fail", function(e){
+         console.error("banner failed to load: " + e.message);
+      });
+      banner.on("show", function(){
+         console.log("banner shown");
+      });
+      banner.on("dismiss", function(){
+         console.log("dismissed banner");
+      });
+      banner.on("click", function(){
+         console.log("clicked banner");
+      });
+      banner.load();
+
+      interstitial.createFrom(Cocoon.Ad.createInterstitial());
+
+      PLATFORM = Cocoon.getPlatform();
+      if (PLATFORM === 'android') {
+          SOCIAL = Cocoon.Social.GooglePlayGames.init(
+              {
+                  defaultLeaderboard: "[[[PLAY_LEADERBOARD_ID]]]"
+              },
+              function() {
+                  console.log('init complete');
+              }
+              );
+          SOCIAL = Cocoon.Social.GooglePlayGames.getSocialInterface();
+      } else if (PLATFORM === 'ios') {
+          SOCIAL = Cocoon.Social.GameCenter.init();
+          SOCIAL = Cocoon.Social.GameCenter.getSocialInterface();
+      } else {
+          return;
+      }
+
+      function socialLogin(cbk) {
+          if (SOCIAL.isLoggedIn()) {
+              cbk(LOGIN_SUCCES);
+          } else {
+              SOCIAL.login(function(loggedIn, error) {
+                   if (error) {
+                        console.error("login error: " + error.message);
+                        cbk(LOGIN_ERROR, error);
+                   } else if (loggedIn) {
+                        console.log("login succeeded");
+                        window.localStorage.setItem('loggedOut', 'no');
+                        cbk(LOGIN_SUCCES);
+                   } else {
+                        console.log("login cancelled");
+                        window.localStorage.setItem('loggedOut', 'yes');
+                        cbk(LOGIN_CANCEL);
+                   }
+              });
+          }
+      }
+
+      if (window.localStorage.getItem('loggedOut') !== 'yes') {
+          socialLogin(function(){});
+      }
+
+      loadState.start();
+  });
+} else {
+    loadState.start();
+}
+
+        </script>
+        <script type="text/javascript">
+// var GAME_INNER_WIDTH = 640;
+// var GAME_INNER_HEIGHT = 920;
+// 
+// var SCREEN_WIDTH = window.innerWidth;
+// var SCREEN_HEIGHT = window.innerWidth;
+// 
+// var CANVAS_HEIGHT = SCREEN_WIDTH/GAME_INNER_WIDTH*GAME_INNER_HEIGHT;
+// var CANVAS_VPAD = Math.max(0, SCREEN_HEIGHT-CANVAS_HEIGHT);
+// var GAME_VPAD = CANVAS_VPAD*GAME_INNER_HEIGHT/CANVAS_HEIGHT;
+// var GAME_OUTER_HEIGHT = GAME_INNER_HEIGHT+GAME_VPAD;
+// 
+// var CANVAS_WIDTH = SCREEN_HEIGHT/GAME_INNER_HEIGHT*GAME_INNER_WIDTH;
+// var CANVAS_HPAD  = Math.max(0, SCREEN_WIDTH-CANVAS_WIDTH);
+// var GAME_HPAD = CANVAS_HPAD*GAME_INNER_WIDTH/CANVAS_WIDTH;
+// var GAME_OUTER_WIDTH = GAME_INNER_WIDTH+GAME_HPAD;
+// 
+// var game = new Phaser.Game(GAME_OUTER_WIDTH, GAME_OUTER_HEIGHT, Phaser.AUTO, '');
+
+// var INNER_WIDTH = 640;
+// var INNER_HEIGHT = 920;
+// 
+// var renderedHeight = window.innerWidth/INNER_WIDTH*INNER_HEIGHT;
+// var extraHeight = Math.max(0, window.innerHeight-renderedHeight);
+// var EXTRA_HEIGHT = extraHeight*INNER_HEIGHT/renderedHeight;
+// var HEIGHT = INNER_HEIGHT+EXTRA_HEIGHT;
+// 
+// var renderedWidth = window.innerHeight/INNER_HEIGHT*INNER_WIDTH;
+// var extraWidth  = Math.max(0, window.innerWidth-renderedWidth);
+// var EXTRA_WIDTH = extraWidth*INNER_WIDTH/renderedWidth;
+// var WIDTH = INNER_WIDTH+EXTRA_WIDTH;
+// 
+// console.log("screen dimens: (" + window.innerWidth + ", " + window.innerHeight + ")");
+// console.log("game dimens: (" + WIDTH + ", " + HEIGHT + ")");
+// 
+// var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '');
+
+var GAME_INNER_WIDTH = 640;
+var GAME_INNER_HEIGHT = 920;
+
+var SCREEN_WIDTH = window.innerWidth*window.devicePixelRatio;
+var SCREEN_HEIGHT = window.innerHeight*window.devicePixelRatio;
+
+var CANVAS_HEIGHT = SCREEN_WIDTH/GAME_INNER_WIDTH*GAME_INNER_HEIGHT;
+var CANVAS_VPAD = Math.max(0, SCREEN_HEIGHT-CANVAS_HEIGHT);
+var GAME_VPAD = CANVAS_VPAD*GAME_INNER_HEIGHT/CANVAS_HEIGHT;
+var GAME_OUTER_HEIGHT = GAME_INNER_HEIGHT+GAME_VPAD;
+
+var CANVAS_WIDTH = SCREEN_HEIGHT/GAME_INNER_HEIGHT*GAME_INNER_WIDTH;
+var CANVAS_HPAD  = Math.max(0, SCREEN_WIDTH-CANVAS_WIDTH);
+var GAME_HPAD = CANVAS_HPAD*GAME_INNER_WIDTH/CANVAS_WIDTH;
+var GAME_OUTER_WIDTH = GAME_INNER_WIDTH+GAME_HPAD;
+
+console.log("screen dimens: (" + SCREEN_WIDTH + ", " + SCREEN_HEIGHT + ")");
+console.log("game inner dimens: (" + GAME_INNER_WIDTH + ", " + GAME_INNER_HEIGHT + ")");
+console.log("game outer dimens: (" + GAME_OUTER_WIDTH + ", " + GAME_OUTER_HEIGHT + ")");
+
+var game = new Phaser.Game(GAME_OUTER_WIDTH, GAME_OUTER_HEIGHT, Phaser.AUTO, '');
+
+game.state.add('boot', bootState);
+game.state.add('load', loadState);
+game.state.add('game', gameState);
+game.state.add('about', aboutState);
+
+game.state.start('boot');
+        </script>
+    </body>
+</html>
