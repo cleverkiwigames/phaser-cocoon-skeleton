@@ -8,6 +8,7 @@
         <script src="cordova.js"></script>
 
         <script src="js/phaser.min.js"></script>
+        <script src="js/debug.js"></script>
         <script src="js/common.js"></script>
         <script src="js/boot.js"></script>
         <script src="js/load.js"></script>
@@ -24,14 +25,19 @@ var SOCIAL; // FIXME needs to be loaded before its used.
 var PLATFORM;
 var INTERSTITIAL = {
     intrst: null,
+    countdown: 0,
+    countdownLen: 50,
 
     createFrom: function (intrst) {
+        this.fade = game.add.graphics(0, 0);
+        this.fade.visible = false;
+
         this.intrst = intrst;
         this.intrst.on("load", function(){
            console.log("loaded interstitial");
         });
         this.intrst.on("fail", function(e){
-           console.log("interst failed to load: "+e.message);
+           console.log("interst failed to load: "+JSON.stringify(e.message));
         });
         this.intrst.on("show", function(){
            console.log("interst shown a modal content");
@@ -45,28 +51,52 @@ var INTERSTITIAL = {
         this.intrst.load();
     },
 
+    prepare: function () {
+        if (this.intrst && this.intrst.isReady() && this.countdown == 0) {
+            this.countdown = this.countdownLen;
+            this.fade.visible = true;
+        }
+    },
+
+    update: function () {
+        if (this.countdown > 0) {
+            this.fade.alpha = 1 - this.countdown/this.countdownLen;
+
+            this.countdown--;
+
+            // We show the ad just a bit before we finish fading because it
+            // takes a small amount of time for the ad to load.
+            if (this.countdown == 5) {
+                this.show();
+            }
+            if (this.countdown == 0) {
+                this.fade.visible = false;
+            }
+        }
+    },
+
     show: function () {
         if (this.intrst && this.intrst.isReady()) {
             this.interst.show();
             this.interst.load();
         }
-    }
+    },
 };
 
 // http://stackoverflow.com/a/10566220
-if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry|IEMobile)/)) {
+if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry|IEMobile)/i)) {
   document.addEventListener("deviceready", function() {
       Cocoon.Ad.configure(
           DEBUGGING ?
           {}:
           {
               ios: {
-                  banner: "ca-app-pub-1511849776501068/2816753433",
-                  interstitial: "ca-app-pub-1511849776501068/4293486633"
+                  banner: "3de1cd4c5ac64b6a808edffa822f8567",
+                  interstitial: "e1681d122d7e4f959815c907ca8db541"
               },
               android: {
-                  banner: "ca-app-pub-1511849776501068/6692761838",
-                  interstitial: "ca-app-pub-1511849776501068/6189463839"
+                  banner: "3de1cd4c5ac64b6a808edffa822f8567",
+                  interstitial: "e1681d122d7e4f959815c907ca8db541"
               }
           }
       );
@@ -77,7 +107,7 @@ if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry|IEMobile)/))
          banner.show();
       });
       banner.on("fail", function(e){
-         console.error("banner failed to load: " + e.message);
+         console.error("banner failed to load: " + JSON.stringify(e.message));
       });
       banner.on("show", function(){
          console.log("banner shown");
@@ -90,7 +120,7 @@ if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry|IEMobile)/))
       });
       banner.load();
 
-      interstitial.createFrom(Cocoon.Ad.createInterstitial());
+      INTERSTITIAL.createFrom(Cocoon.Ad.createInterstitial());
 
       PLATFORM = Cocoon.getPlatform();
       if (PLATFORM === 'android') {
@@ -142,64 +172,27 @@ if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry|IEMobile)/))
 }
 
         </script>
+        <div id="cvs"></div>
         <script type="text/javascript">
-// var GAME_INNER_WIDTH = 640;
-// var GAME_INNER_HEIGHT = 920;
-// 
-// var SCREEN_WIDTH = window.innerWidth;
-// var SCREEN_HEIGHT = window.innerWidth;
-// 
-// var CANVAS_HEIGHT = SCREEN_WIDTH/GAME_INNER_WIDTH*GAME_INNER_HEIGHT;
-// var CANVAS_VPAD = Math.max(0, SCREEN_HEIGHT-CANVAS_HEIGHT);
-// var GAME_VPAD = CANVAS_VPAD*GAME_INNER_HEIGHT/CANVAS_HEIGHT;
-// var GAME_OUTER_HEIGHT = GAME_INNER_HEIGHT+GAME_VPAD;
-// 
-// var CANVAS_WIDTH = SCREEN_HEIGHT/GAME_INNER_HEIGHT*GAME_INNER_WIDTH;
-// var CANVAS_HPAD  = Math.max(0, SCREEN_WIDTH-CANVAS_WIDTH);
-// var GAME_HPAD = CANVAS_HPAD*GAME_INNER_WIDTH/CANVAS_WIDTH;
-// var GAME_OUTER_WIDTH = GAME_INNER_WIDTH+GAME_HPAD;
-// 
-// var game = new Phaser.Game(GAME_OUTER_WIDTH, GAME_OUTER_HEIGHT, Phaser.AUTO, '');
-
-// var INNER_WIDTH = 640;
-// var INNER_HEIGHT = 920;
-// 
-// var renderedHeight = window.innerWidth/INNER_WIDTH*INNER_HEIGHT;
-// var extraHeight = Math.max(0, window.innerHeight-renderedHeight);
-// var EXTRA_HEIGHT = extraHeight*INNER_HEIGHT/renderedHeight;
-// var HEIGHT = INNER_HEIGHT+EXTRA_HEIGHT;
-// 
-// var renderedWidth = window.innerHeight/INNER_HEIGHT*INNER_WIDTH;
-// var extraWidth  = Math.max(0, window.innerWidth-renderedWidth);
-// var EXTRA_WIDTH = extraWidth*INNER_WIDTH/renderedWidth;
-// var WIDTH = INNER_WIDTH+EXTRA_WIDTH;
-// 
-// console.log("screen dimens: (" + window.innerWidth + ", " + window.innerHeight + ")");
-// console.log("game dimens: (" + WIDTH + ", " + HEIGHT + ")");
-// 
-// var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '');
-
 var GAME_INNER_WIDTH = 640;
 var GAME_INNER_HEIGHT = 920;
 
-var SCREEN_WIDTH = window.innerWidth*window.devicePixelRatio;
-var SCREEN_HEIGHT = window.innerHeight*window.devicePixelRatio;
+var SCREEN_WIDTH = window.innerWidth;
+var SCREEN_HEIGHT = window.innerHeight;
 
-var CANVAS_HEIGHT = SCREEN_WIDTH/GAME_INNER_WIDTH*GAME_INNER_HEIGHT;
-var CANVAS_VPAD = Math.max(0, SCREEN_HEIGHT-CANVAS_HEIGHT);
-var GAME_VPAD = CANVAS_VPAD*GAME_INNER_HEIGHT/CANVAS_HEIGHT;
-var GAME_OUTER_HEIGHT = GAME_INNER_HEIGHT+GAME_VPAD;
+var SCREEN_GAME_RATIO = Math.min(SCREEN_WIDTH/GAME_INNER_WIDTH, SCREEN_HEIGHT/GAME_INNER_HEIGHT);
 
-var CANVAS_WIDTH = SCREEN_HEIGHT/GAME_INNER_HEIGHT*GAME_INNER_WIDTH;
-var CANVAS_HPAD  = Math.max(0, SCREEN_WIDTH-CANVAS_WIDTH);
-var GAME_HPAD = CANVAS_HPAD*GAME_INNER_WIDTH/CANVAS_WIDTH;
-var GAME_OUTER_WIDTH = GAME_INNER_WIDTH+GAME_HPAD;
+var GAME_OUTER_HEIGHT = SCREEN_HEIGHT*SCREEN_GAME_RATIO;
+var GAME_VPAD = GAME_OUTER_HEIGHT-GAME_INNER_HEIGHT;
+
+var GAME_OUTER_WIDTH = SCREEN_WIDTH*SCREEN_GAME_RATIO;
+var GAME_HPAD = GAME_OUTER_WIDTH-GAME_INNER_WIDTH;
 
 console.log("screen dimens: (" + SCREEN_WIDTH + ", " + SCREEN_HEIGHT + ")");
 console.log("game inner dimens: (" + GAME_INNER_WIDTH + ", " + GAME_INNER_HEIGHT + ")");
 console.log("game outer dimens: (" + GAME_OUTER_WIDTH + ", " + GAME_OUTER_HEIGHT + ")");
 
-var game = new Phaser.Game(GAME_OUTER_WIDTH, GAME_OUTER_HEIGHT, Phaser.AUTO, '');
+var game = new Phaser.Game(GAME_OUTER_WIDTH, GAME_OUTER_HEIGHT, Phaser.AUTO, 'cvs');
 
 game.state.add('boot', bootState);
 game.state.add('load', loadState);

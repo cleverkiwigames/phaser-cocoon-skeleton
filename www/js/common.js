@@ -1,5 +1,3 @@
-var DEBUGGING = true;
-
 // Abstracted from http://stackoverflow.com/a/17243070/497142
 function hsvToRgb(hsv) {
     var h = hsv.h, s = hsv.s, v = hsv.v;

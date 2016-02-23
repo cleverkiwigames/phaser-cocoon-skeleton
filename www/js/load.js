@@ -9,18 +9,13 @@ var loadState = {
     },
 
     preload: function () {
-        game.stage.backgroundColor = '#8fc15a';
+        game.stage.backgroundColor = '#94c048';
         game.add.sprite(game.world.centerX, game.world.centerY, 'logo')
             .anchor.setTo(0.5);
 
         [
         ].forEach(function (name) {
-            game.load.image(name, 'images/sprites' + name + '.png');
-        });
-
-        [
-        ].forEach(function (name) {
-            game.load.bitmapFont(name, 'fonts/'+name+'.png', 'fonts/'+name+'.fnt');
+            game.load.image(name, 'images/sprites/' + name + '.png');
         });
 
         [

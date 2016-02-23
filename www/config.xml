@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget 
 id="com.cleverkiwigames.[[[NAME_LOWER]]]" 
-version="1.0.0" 
+version="1.0.1" 
 xmlns="http://www.w3.org/ns/widgets"
 xmlns:cdv="http://cordova.apache.org/ns/1.0"
 xmlns:cocoon="http://cocoon.io/ns/1.0"
@@ -31,8 +31,8 @@ xmlns:cocoon="http://cocoon.io/ns/1.0"
     </cocoon:plugin>
 
     <preference name="Orientation"                value="portrait" />
-    <preference name="target-device"              value="handset" />      <!-- all: possible values handset, tablet, or universal -->
     <preference name="Fullscreen"                 value="true" />           <!-- all: hides the status bar at the top of the screen -->
+    <preference name="target-device"              value="handset" />      <!-- all: possible values handset, tablet, or universal -->
     <preference name="webviewbounce"              value="false" />           <!-- ios: control whether the screen 'bounces' when scrolled beyond the top -->
     <preference name="prerendered-icon"           value="true" />           <!-- ios: if icon is prerendered, iOS will not apply it's gloss to the app's icon on the user's home screen -->
     <preference name="stay-in-webview"            value="false" />          <!-- ios: external links should open in the default browser, 'true' would use the webview the app lives in -->
