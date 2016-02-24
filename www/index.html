@@ -174,25 +174,16 @@ if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry|IEMobile)/i)
         </script>
         <div id="cvs"></div>
         <script type="text/javascript">
-var GAME_INNER_WIDTH = 640;
-var GAME_INNER_HEIGHT = 920;
+var dims = scale(
+    {width: 640, height: 920},
+    {width: window.innerWidth, height: window.innerHeight}
+);
 
-var SCREEN_WIDTH = window.innerWidth;
-var SCREEN_HEIGHT = window.innerHeight;
+console.log("screen dimens: (" + dims.screen.width + ", " + dims.screen.height + ")");
+console.log("game inner dimens: (" + dims.game.inner.width + ", " + dims.game.inner.height + ")");
+console.log("game outer dimens: (" + dims.game.outer.width + ", " + dims.game.outer.height + ")");
 
-var SCREEN_GAME_RATIO = Math.min(SCREEN_WIDTH/GAME_INNER_WIDTH, SCREEN_HEIGHT/GAME_INNER_HEIGHT);
-
-var GAME_OUTER_HEIGHT = SCREEN_HEIGHT*SCREEN_GAME_RATIO;
-var GAME_VPAD = GAME_OUTER_HEIGHT-GAME_INNER_HEIGHT;
-
-var GAME_OUTER_WIDTH = SCREEN_WIDTH*SCREEN_GAME_RATIO;
-var GAME_HPAD = GAME_OUTER_WIDTH-GAME_INNER_WIDTH;
-
-console.log("screen dimens: (" + SCREEN_WIDTH + ", " + SCREEN_HEIGHT + ")");
-console.log("game inner dimens: (" + GAME_INNER_WIDTH + ", " + GAME_INNER_HEIGHT + ")");
-console.log("game outer dimens: (" + GAME_OUTER_WIDTH + ", " + GAME_OUTER_HEIGHT + ")");
-
-var game = new Phaser.Game(GAME_OUTER_WIDTH, GAME_OUTER_HEIGHT, Phaser.AUTO, 'cvs');
+var game = new Phaser.Game(dims.game.outer.width, dims.game.outer.height, Phaser.AUTO, 'cvs');
 
 game.state.add('boot', bootState);
 game.state.add('load', loadState);

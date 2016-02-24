@@ -92,14 +92,12 @@ for (var i = 0; i < COLOURS.length; i++) {
     };
 }
 
-// TODO What if bitmap text?
 function addText(x, y, text, size, colour) {
     var t = game.add.text(x, y, text, {
         font: size + 'px Arial',
         fill: colour || COL_TEXT
     });
     t.anchor.setTo(0.5, 0.5);
-    t.setShadow(0, 2, 'rgba(255,252,243,1)', 3);
     return t;
 }
 
@@ -110,7 +108,7 @@ function saveProgress(p) {
 function loadProgress() {
     var progress = window.localStorage.getItem('progress');
     if (progress === null) {
-        return {unlockedModes: [0], completedModes: [], completedLevels: [[0, 2, 5], [], []]};
+        return {};
     }
     return JSON.parse(progress);
 }
@@ -119,19 +117,38 @@ function startState(state, extra) {
     game.state.start(state, true, false, extra);
 }
 
-function drawBoundBox() {
+function drawBoundBox(dims) {
     if (DEBUGGING) {
-        var border = game.add.graphics(GAME_HPAD/2, GAME_VPAD/2);
+        var border = game.add.graphics(dims.game.pad.horz, dims.game.pad.vert);
         border.lineStyle(10, 0, 10);
-        border.drawRect(0, 0, GAME_INNER_WIDTH, GAME_INNER_HEIGHT);
+        border.drawRect(0, 0, dims.game.inner.width, dims.game.inner.height);
         border.endFill();
         game.world.bringToTop(border);
     }
 }
 
-function addGroup() {
+function addGroup(dims) {
     var g = game.add.group();
-    g.x = GAME_HPAD/2;
-    g.y = GAME_VPAD/2;
+    g.x = dims.game.pad.horz;
+    g.y = dims.game.pad.vert;
     return g;
+}
+
+function scale(game, screen) {
+    var dims = {
+        game: {
+            inner: game,
+        },
+        screen: screen,
+        ratio: Math.min(screen.width/game.width, screen.height/game.height)
+    };
+    dims.game.outer = {
+        width: screen.width/dims.ratio,
+        height: screen.height/dims.ratio
+    };
+    dims.game.pad = {
+        vert: (dims.game.outer.height-game.height)/2,
+        horz: (dims.game.outer.width-game.width)/2,
+    };
+    return dims;
 }

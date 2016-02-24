@@ -4,6 +4,8 @@ var bootState = {
         game.scale.pageAlignHorizontally = true;
         game.scale.pageAlignVertically = true;
         game.scale.refresh();
+
+        game.forceSingleUpdate = true;
     },
 
     preload: function () {

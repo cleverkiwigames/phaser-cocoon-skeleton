@@ -27,7 +27,7 @@ var loadState = {
             game.load.audio(name, 'audio/'+name+'.wav');
         });
 
-        drawBoundBox();
+        drawBoundBox(dims);
     },
 
     create: function () {

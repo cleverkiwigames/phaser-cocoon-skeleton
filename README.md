@@ -43,26 +43,27 @@ is loaded.
 ### Using the Layout
 
 This template automatically fills the screen with the game, without borders. The
-globals `GAME_INNER_WIDTH` and `GAME_INNER_HEIGHT` contain the dimensions of
-your game, and are the width and height of an "inner" rectangle that fills the
-screen either horizontally or vertically. In order to center this rectangle, it
-is padded by `GAME_HPAD` and `GAME_VPAD` (`GAME_HPAD/2` to the left and right,
-and similarly for `GAME_VPAD`). The dimensions of the screen, in relation to the
-game world, is defined by `GAME_OUTER_WIDTH` and `GAME_OUTER_HEIGHT`.
+globals `dims.game.inner.width` and `dims.game.inner.height` contain the
+dimensions of your game, and are the width and height of an "inner" rectangle
+that fills the screen either horizontally or vertically. In order to center this
+rectangle, it is padded by `dims.game.pad.horz` and `dims.game.pad.vert`. The
+dimensions of the screen, in relation to the game world, is defined by
+`dims.game.outer.width` and `dims.game.outer.height`.
 
-For example, we have a game with `GAME_INNER_WIDTH = 600` and `GAME_INNER_HEIGHT =
-800`. The screen has width `1200` and height `2400` so the game is scaled to the
-maximum horizontally, but not vertically - it has `GAME_HPAD = 0` and `GAME_VPAD
-= 400` (that is, `400` "in-game" pixels). The `GAME_OUTER_WIDTH = 600` and
-`GAME_OUTER_HEIGHT = 1200`.
+For example, we have a game with `dims.game.inner.width = 600` and
+`dims.game.inner.height = 800`. The screen has width `1200` and height `2400` so
+the game is scaled to the maximum horizontally, but not vertically - it has
+`dims.game.pad.horz = 0` and `dims.game.pad.vert = 400` (that is, `400`
+"in-game" pixels). The `dims.game.outer.width = 600` and `dims.game.outer.height
+= 1200`.
 
 In the `game` state, there is a `this.fgGrp` group - as long as you add your
-assets to this group and keep them within `GAME_INNER_WIDTH` and
-`GAME_INNER_HEIGHT` of its origin then those assets will be centered and fully
-visible within the screen. `this.bg` is a graphics layer that exists behind
-`this.fgGrp` and can be used to define the background of the game, using
-`GAME_OUTER_WIDTH` and `GAME_OUTER_HEIGHT` as limits. Add `drawBoundBox()` to
-your state's `create` method to act as a guide.
+assets to this group and keep them within `dims.game.inner.width` and
+`dims.game.inner.height` of its origin then those assets will be centered and
+fully visible within the screen. `this.bg` is a graphics layer that exists
+behind `this.fgGrp` and can be used to define the background of the game, using
+`dims.game.outer.width` and `dims.game.outer.height` as limits. Add
+`drawBoundBox(dims)` to your state's `create` method to act as a guide.
 
 ### Using Interstitials
 
