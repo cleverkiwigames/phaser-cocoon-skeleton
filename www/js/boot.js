@@ -1,18 +1,44 @@
 var bootState = {
     init: function() {
-        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-        game.scale.pageAlignHorizontally = true;
-        game.scale.pageAlignVertically = true;
-        game.scale.refresh();
+        GAME.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
+        GAME.scale.pageAlignHorizontally = true;
+        GAME.scale.pageAlignVertically = true;
+        GAME.scale.setResizeCallback(onResize);
 
-        game.forceSingleUpdate = true;
+        GAME.scale.setUserScale(DIMS.ratio, DIMS.ratio, 0, 0);
+        GAME.scale.refresh();
+        GAME.scale.setGameSize(DIMS.game.outer.width, DIMS.game.outer.height);
+
+        GAME.forceSingleUpdate = true;
     },
 
     preload: function () {
-        game.load.image('logo', 'images/logo.png');
+        GAME.load.image('logo', 'images/logo.png');
     },
 
     create: function () {
-        game.state.start('load');
+        GAME.state.start('load');
     }
 };
+
+function onResize() {
+    var scrnDim = {width: window.innerWidth, height: window.innerHeight};
+    if (DIV) {
+        scrnDim = {width: DIV.clientWidth, height: DIV.clientHeight};
+    }
+
+    if (scrnDim.width === DIMS.screen.width && scrnDim.height === DIMS.screen.height) {
+        return;
+    }
+
+    DIMS = scale(DIMS.game.inner, scrnDim);
+
+    GAME.scale.setUserScale(DIMS.ratio, DIMS.ratio, 0, 0);
+    GAME.scale.setGameSize(DIMS.game.outer.width, DIMS.game.outer.height);
+    GAME.scale.refresh();
+
+    var state = GAME.state.getCurrentState();
+    if (state.onResize) {
+        state.onResize.call(state, DIMS.game.inner.left, DIMS.game.inner.top);
+    }
+}

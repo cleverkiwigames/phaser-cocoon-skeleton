@@ -9,25 +9,23 @@ var loadState = {
     },
 
     preload: function () {
-        game.stage.backgroundColor = '#94c048';
-        game.add.sprite(game.world.centerX, game.world.centerY, 'logo')
+        GAME.stage.backgroundColor = '#94c048';
+        GAME.add.sprite(GAME.world.centerX, GAME.world.centerY, 'logo')
             .anchor.setTo(0.5);
 
         [
         ].forEach(function (name) {
-            game.load.image(name, 'images/sprites/' + name + '.png');
+            GAME.load.image(name, 'images/sprites/' + name + '.png');
         });
 
         [
         ].forEach(function (name) {
-            game.load.bitmapFont(name, 'fonts/'+name+'.png', 'fonts/'+name+'.fnt');
+            GAME.load.bitmapFont(name, 'fonts/'+name+'.png', 'fonts/'+name+'.fnt');
         });
 
         this.audioFiles.forEach(function (name) {
-            game.load.audio(name, 'audio/'+name+'.wav');
+            GAME.load.audio(name, 'audio/'+name+'.wav');
         });
-
-        drawBoundBox(dims);
     },
 
     create: function () {
@@ -35,11 +33,11 @@ var loadState = {
 
         this.audio = {};
         this.audioFiles.forEach(function (name) {
-            audio[name] = game.add.audio(name);
+            audio[name] = GAME.add.audio(name);
             toDecode.push(toDecode);
         });
 
-        game.sound.setDecodedCallback(toDecode, this.start, this);
+        GAME.sound.setDecodedCallback(toDecode, this.start, this);
     },
 
     start: function () {

@@ -93,7 +93,7 @@ for (var i = 0; i < COLOURS.length; i++) {
 }
 
 function addText(x, y, text, size, colour) {
-    var t = game.add.text(x, y, text, {
+    var t = GAME.add.text(x, y, text, {
         font: size + 'px Arial',
         fill: colour || COL_TEXT
     });
@@ -114,21 +114,20 @@ function loadProgress() {
 }
 
 function startState(state, extra) {
-    game.state.start(state, true, false, extra);
+    GAME.state.start(state, true, false, extra);
 }
 
-function drawBoundBox(dims) {
+function drawBoundBox(g, dims) {
     if (DEBUGGING) {
-        var border = game.add.graphics(dims.game.pad.horz, dims.game.pad.vert);
-        border.lineStyle(10, 0, 10);
-        border.drawRect(0, 0, dims.game.inner.width, dims.game.inner.height);
-        border.endFill();
-        game.world.bringToTop(border);
+        g.lineStyle(10, 0, 10);
+        g.drawRect(0, 0, dims.game.inner.width, dims.game.inner.height);
+        g.endFill();
+        GAME.world.bringToTop(g);
     }
 }
 
 function addGroup(dims) {
-    var g = game.add.group();
+    var g = GAME.add.group();
     g.x = dims.game.pad.horz;
     g.y = dims.game.pad.vert;
     return g;
@@ -150,5 +149,7 @@ function scale(game, screen) {
         vert: (dims.game.outer.height-game.height)/2,
         horz: (dims.game.outer.width-game.width)/2,
     };
+    dims.game.inner.left = dims.game.pad.horz;
+    dims.game.inner.top = dims.game.pad.vert;
     return dims;
 }

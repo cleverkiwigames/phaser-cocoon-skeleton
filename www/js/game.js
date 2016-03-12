@@ -4,16 +4,16 @@ var gameState = {
     },
 
     create: function () {
-        game.stage.backgroundColor = '#8fc15a';
+        GAME.stage.backgroundColor = '#8fc15a';
 
-        this.bg = game.add.graphics(0, 0);
+        this.bg = GAME.add.graphics(0, 0);
 
-        this.fgGrp = addGroup(dims);
+        this.fgGrp = addGroup(DIMS);
 
-        this.fg = game.add.graphics(0, 0);
+        this.fg = GAME.add.graphics(0, 0);
         this.fgGrp.add(this.fg);
 
-        var t = game.add.text(dims.game.inner.width/2, 100, 'MAIN', {
+        var t = GAME.add.text(DIMS.game.inner.width/2, 100, 'MAIN', {
             font: '50px Arial',
             fill: '#ffffff'
         }, this.fgGrp);
@@ -32,10 +32,8 @@ var gameState = {
         //     }
         // });
 
-        drawBoundBox(dims);
+        this.x = 0;
     },
-
-    x: 0,
 
     update: function () {
         INTERSTITIAL.update();
@@ -44,8 +42,8 @@ var gameState = {
 
         this.fg.beginFill(0xffffff);
         this.fg.drawCircle(
-            dims.game.inner.width/2+25*Math.sin(this.x*Math.PI*2),
-            dims.game.inner.height*3/4+25*Math.cos(this.x*Math.PI*2),
+            DIMS.game.inner.width/2+25*Math.sin(this.x*Math.PI*2),
+            DIMS.game.inner.height*3/4+25*Math.cos(this.x*Math.PI*2),
             10
         );
         var y = this.x-0.5;
@@ -53,8 +51,8 @@ var gameState = {
             y += 1;
         }
         this.fg.drawCircle(
-            dims.game.inner.width/2+25*Math.sin(y*Math.PI*2),
-            dims.game.inner.height*3/4+25*Math.cos(y*Math.PI*2),
+            DIMS.game.inner.width/2+25*Math.sin(y*Math.PI*2),
+            DIMS.game.inner.height*3/4+25*Math.cos(y*Math.PI*2),
             10
         );
         this.fg.endFill();
@@ -63,6 +61,8 @@ var gameState = {
         if (this.x < 0) {
             this.x += 1;
         }
+
+        drawBoundBox(this.fg, DIMS);
     },
 
     paused: function () {
@@ -76,4 +76,9 @@ var gameState = {
 
     shutdown: function () {
     },
+
+    onResize: function (left, top) {
+        this.fgGrp.x = left;
+        this.fgGrp.y = top;
+    }
 };
