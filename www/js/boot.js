@@ -26,8 +26,11 @@ function onResize() {
     if (DIV) {
         scrnDim = {width: DIV.clientWidth, height: DIV.clientHeight};
     }
+    scrnDim.adHeight = AD_HEIGHT;
 
-    if (scrnDim.width === DIMS.screen.width && scrnDim.height === DIMS.screen.height) {
+    if (scrnDim.width === DIMS.screen.width
+            && scrnDim.height === DIMS.screen.height
+            && scrnDim.adHeight === DIMS.screen.adHeight) {
         return;
     }
 

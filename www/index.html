@@ -19,17 +19,17 @@
         <!-- 
             style="display: none; background-color: white; position: fixed;
             bottom: 0; width: 100%; height: 90px; text-align: center;"> -->
-        <div id="dummy-ad"
+        <!--<div id="dummy-ad"
             style="background-color: white; position: fixed;
-            bottom: 0; width: 100%; height: 0; text-align: center;">
-            <h1 style="font-family: 'Arial';">ADVERTISEMENT<h1>
+            bottom: 0; width: 100%; height: 90px; text-align: center;">
+            <h1 style="font-family: 'Arial';">ADVERTISEMENT<h1>-->
         </div>
         <script>
 var LOGIN_ERROR = 1;
 var LOGIN_CANCEL = 2;
 var LOGIN_SUCCES = 3;
 
-var SOCIAL; // FIXME needs to be loaded before its used.
+var SOCIAL; // FIXME needs to be loaded before it's used.
 var PLATFORM;
 var INTERSTITIAL = {
     intrst: null,
@@ -91,79 +91,181 @@ var INTERSTITIAL = {
     },
 };
 
-var BANNER = {
-    load: function () {
-        this.show();
-    },
-    hide: function () {
-        document.getElementById('dummy-ad').style.height = '0';
-    },
-    show: function () {
-        document.getElementById('dummy-ad').style.height = '90px';
-    },
+var PLAY_LEADERBOARD_ID = "";
+var testDeviceIds = {
+    "F8E53637-5D67-4423-8261-48A3A9B8DB29": true,
 };
+
+var AD_HEIGHT = 0;
+
+var initApi = function (cocoon, adIds) {
+    var banner, interst, game, g;
+    var testAds = function () {};
+
+    PLATFORM = cocoon.getPlatform();
+
+    AD_HEIGHT = 90;
+    if (PLATFORM === 'ios') {
+        AD_HEIGHT *= window.devicePixelRatio;
+    }
+    onResize();
+
+    // TODO CHECK PURCHASES
+
+    if (DEBUGGING || testDeviceIds[device.uuid]) {
+        var visible = true;
+        testAds = function (reload) {
+            if (reload) {
+                g.clear();
+            } else {
+                g = GAME.add.graphics(0, 0);
+            }
+            g.beginFill(0xffffff);
+            var h = AD_HEIGHT/DIMS.ratio;
+            g.drawRect(0, DIMS.game.outer.height-h, DIMS.game.outer.width, h);
+            g.endFill();
+            g.visible = visible;
+        }
+        banner = {
+            load: function () {
+                this.show();
+            },
+            hide: function () {
+                visible = false;
+                if (g) {
+                    g.visible = visible;
+                }
+            },
+            show: function () {
+                visible = true;
+                if (g) {
+                    g.visible = visible;
+                }
+            },
+        };
+    } else {
+        Cocoon.Ad.configure(adIds);
+
+        banner = cocoon.Ad.createBanner();
+        banner.on("load", function(){
+            if (DEBUGGING) {
+                console.log("banner loaded");
+            }
+            banner.show();
+        });
+        banner.on("fail", function(e){
+            if (DEBUGGING) {
+                console.error("banner failure: " + JSON.stringify(e.message));
+            }
+        });
+        ["show", "dismiss", "click"].forEach(function (e) {
+            banner.on(e, function(){
+                if (DEBUGGING) {
+                    console.log("banner: "+e);
+                }
+            });
+        });
+
+        interst = cocoon.Ad.createInterstitial();
+        ["load", "show", "dismiss", "click"].forEach(function (e) {
+            interst.on(e, function(){
+                if (DEBUGGING) {
+                    console.log("interstitial: "+e);
+                }
+            });
+        });
+        intrst.on("fail", function(e){
+            if (DEBUGGING) {
+                console.error("interstitial failure: "+JSON.stringify(e.message));
+            }
+        });
+        var FADE_DURATION = 50;
+        interst.load();
+
+        if (PLATFORM === 'android') {
+            cocoon.Social.GooglePlayGames.init(
+                {
+                    defaultLeaderboard: PLAY_LEADERBOARD_ID,
+                },
+                function() {
+                    console.log('GooglePlayGames initialised');
+                }
+            );
+            game = cocoon.Social.GooglePlayGames.getSocialInterface();
+        } else if (PLATFORM === 'android') {
+            cocoon.Social.GameCenter.init();
+            game = cocoon.Social.GameCenter.getSocialInterface();
+        }
+    }
+
+    banner.load();
+    // interst.load();
+
+    return {
+        testAds: testAds,
+        game: game,
+        interst: {
+            create: function () {
+                var fade = GAME.add.graphics(0, 0);
+                fade.visible = false;
+                this.fade = fade;
+                this.countdown = 0;
+            },
+            show: function () {
+                if (intrst.isReady() && this.countdown == 0) {
+                    this.countdown = math.Max(FADE_DURATION, 10);
+                    this.fade.visible = true;
+                }
+            },
+            update: function () {
+                if (this.countdown > 0) {
+                    // TODO Consider lerping for fade.
+                    this.fade.alpha = 1 - this.countdown/FADE_DURATION;
+
+                    this.countdown--;
+
+                    // We show the ad just a bit before we finish fading because it
+                    // takes a small amount of time for the ad to load.
+                    if (this.countdown == 5) {
+                        interst.show();
+                        interst.load();
+                    }
+                    if (this.countdown == 0) {
+                        this.fade.visible = false;
+                    }
+                }
+            },
+        }
+    };
+};
+
+// var Mobile = plugins(); // maps to cocoon except for ads
+// var DevMobile = 
+// var DummyMobile = // for setting results of api calls
+// var FakeMobile = // dummy impls for everything
+// var Browser = // all blank, unsupported messages
+
 // http://damien.antipa.at/blog/2014/02/08/3-ways-to-detect-that-your-application-is-running-in-cordova-slash-phonegap/
 var FAKE_MOBILE = true;
 var CORDOVA = !!window.cordova;
+var API = { // Web version
+    plat: 'web',
+    // game: ,
+};
+
+var API;
 if (CORDOVA) {
     document.addEventListener("deviceready", function() {
-        Cocoon.Ad.configure(
-            DEBUGGING ?
-            {}:
-            {
-                ios: {
-                    banner: "3de1cd4c5ac64b6a808edffa822f8567",
-                    interstitial: "e1681d122d7e4f959815c907ca8db541"
-                },
-                android: {
-                    banner: "3de1cd4c5ac64b6a808edffa822f8567",
-                    interstitial: "e1681d122d7e4f959815c907ca8db541"
-                }
+        API = initApi(Cocoon, {
+            ios: {
+                banner: "3de1cd4c5ac64b6a808edffa822f8567",
+                interstitial: "e1681d122d7e4f959815c907ca8db541"
+            },
+            android: {
+                banner: "3de1cd4c5ac64b6a808edffa822f8567",
+                interstitial: "e1681d122d7e4f959815c907ca8db541"
             }
-        );
-
-        var banner;
-        // TODO Check if purchased.
-        if (!true) { // is not test device
-            banner = Cocoon.Ad.createBanner();
-            banner.on("load", function(){
-               console.log("banner loaded");
-               banner.show();
-            });
-            banner.on("fail", function(e){
-               console.error("banner failed to load: " + JSON.stringify(e.message));
-            });
-            banner.on("show", function(){
-               console.log("banner shown");
-            });
-            banner.on("dismiss", function(){
-               console.log("dismissed banner");
-            });
-            banner.on("click", function(){
-               console.log("clicked banner");
-            });
-        }
-        banner.load();
-
-        INTERSTITIAL.createFrom(Cocoon.Ad.createInterstitial());
-
-        PLATFORM = Cocoon.getPlatform();
-        if (PLATFORM === 'android') {
-            SOCIAL = Cocoon.Social.GooglePlayGames.init(
-                {
-                    defaultLeaderboard: "[[[PLAY_LEADERBOARD_ID]]]"
-                },
-                function() {
-                    console.log('init complete');
-                }
-                );
-            SOCIAL = Cocoon.Social.GooglePlayGames.getSocialInterface();
-        } else if (PLATFORM === 'ios') {
-            SOCIAL = Cocoon.Social.GameCenter.init();
-            SOCIAL = Cocoon.Social.GameCenter.getSocialInterface();
-        } else {
-            return;
-        }
+        });
 
         function socialLogin(cbk) {
             if (SOCIAL.isLoggedIn()) {
@@ -193,6 +295,7 @@ if (CORDOVA) {
         loadState.start();
     });
 } else if (FAKE_MOBILE) {
+    // impl dummy game, purchase
     // TODO Check if purchased.
     BANNER.show();
 } else {
@@ -210,14 +313,17 @@ var scrnDim = {width: window.innerWidth, height: window.innerHeight};
 if (DIV) {
     scrnDim = {width: DIV.clientWidth, height: DIV.clientHeight};
 }
+scrnDim.adHeight = AD_HEIGHT;
 
 // TODO Remove ad height from height.
+// var DIMS = scale({width: 640, height: 920}, scrnDim);
 var DIMS = scale({width: 640, height: 920}, scrnDim);
 
 var GAME = new Phaser.Game(
     DIMS.game.outer.width,
     DIMS.game.outer.height,
-    Phaser.AUTO, // TODO Check AUTO vs CANVAS w/ different browsers/Cocoon.io.
+    // AUTO causes shrink in Canvas+.
+    Phaser.CANVAS, // TODO Check AUTO vs CANVAS w/ different browsers/Cocoon.io.
     DIV ? DIV : undefined
 );
 

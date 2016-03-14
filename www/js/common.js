@@ -139,14 +139,17 @@ function scale(game, screen) {
             inner: game,
         },
         screen: screen,
-        ratio: Math.min(screen.width/game.width, screen.height/game.height)
+        ratio: Math.min(screen.width/game.width, (screen.height-screen.adHeight)/game.height)
     };
+    // SCREEN x -> GAME x: x/ratio
+    // GAME x -> SCREEN x: x*ratio
+    dims.game.adHeight = screen.adHeight/dims.ratio;
     dims.game.outer = {
         width: screen.width/dims.ratio,
         height: screen.height/dims.ratio
     };
     dims.game.pad = {
-        vert: (dims.game.outer.height-game.height)/2,
+        vert: (dims.game.outer.height-dims.game.adHeight-game.height)/2,
         horz: (dims.game.outer.width-game.width)/2,
     };
     dims.game.inner.left = dims.game.pad.horz;

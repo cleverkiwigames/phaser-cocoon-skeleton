@@ -33,6 +33,9 @@ var gameState = {
         // });
 
         this.x = 0;
+
+        API.testAds(false);
+        // this.onResize(DIMS.game.inner.left, DIMS.game.inner.top);
     },
 
     update: function () {
@@ -80,5 +83,6 @@ var gameState = {
     onResize: function (left, top) {
         this.fgGrp.x = left;
         this.fgGrp.y = top;
+        API.testAds(true);
     }
 };
