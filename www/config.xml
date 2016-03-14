@@ -22,6 +22,7 @@ xmlns:cocoon="http://cocoon.io/ns/1.0"
     <cocoon:plugin name="com.ludei.canvasplus.ios" />
     <cocoon:plugin name="com.ludei.canvasplus.android" />
 
+    <cocoon:plugin name="cocoon-plugin-device" />
     <cocoon:plugin name="cocoon-plugin-share" />
     <cocoon:plugin name="cocoon-plugin-ads-ios-admob" />
     <cocoon:plugin name="cocoon-plugin-social-ios-gamecenter" />
