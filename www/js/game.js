@@ -19,6 +19,29 @@ var gameState = {
         }, this.fgGrp);
         t.anchor.setTo(0.5);
 
+        if (IS_MOBILE) {
+            var rmAdsText = GAME.add.text(DIMS.game.inner.width/2, 775, 'REMOVE ADS', {
+                font: '50px Arial',
+                fill: '#ffffff'
+            }, this.fgGrp);
+            rmAdsText.anchor.setTo(0.5);
+            rmAdsText.inputEnabled = true;
+            rmAdsText.events.onInputDown.add(function () {
+                API.ads.remove();
+                rmAdsText.visible = false;
+            }, this);
+
+            var showAdText = GAME.add.text(DIMS.game.inner.width/2, 850, 'SHOW INTERSTITIAL', {
+                font: '50px Arial',
+                fill: '#ffffff'
+            }, this.fgGrp);
+            showAdText.anchor.setTo(0.5);
+            showAdText.inputEnabled = true;
+            showAdText.events.onInputDown.add(function () {
+                API.interst.show();
+            }, this);
+        }
+
         // INTERSTITIAL.show();
 
         // socialLogin(function (res) {
@@ -34,19 +57,18 @@ var gameState = {
 
         this.x = 0;
 
-        API.testAds(false);
-        // this.onResize(DIMS.game.inner.left, DIMS.game.inner.top);
+        API.ads.init();
     },
 
     update: function () {
-        INTERSTITIAL.update();
+        API.ads.update();
 
         this.fg.clear();
 
         this.fg.beginFill(0xffffff);
         this.fg.drawCircle(
             DIMS.game.inner.width/2+25*Math.sin(this.x*Math.PI*2),
-            DIMS.game.inner.height*3/4+25*Math.cos(this.x*Math.PI*2),
+            DIMS.game.inner.height/2+25*Math.cos(this.x*Math.PI*2),
             10
         );
         var y = this.x-0.5;
@@ -55,7 +77,7 @@ var gameState = {
         }
         this.fg.drawCircle(
             DIMS.game.inner.width/2+25*Math.sin(y*Math.PI*2),
-            DIMS.game.inner.height*3/4+25*Math.cos(y*Math.PI*2),
+            DIMS.game.inner.height/2+25*Math.cos(y*Math.PI*2),
             10
         );
         this.fg.endFill();
@@ -81,8 +103,8 @@ var gameState = {
     },
 
     onResize: function (left, top) {
+        API.ads.refresh();
         this.fgGrp.x = left;
         this.fgGrp.y = top;
-        API.testAds(true);
     }
 };

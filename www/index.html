@@ -16,131 +16,165 @@
         <script src="js/about.js"></script>
     </head>
     <body style="margin: 0; padding: 0; background-color: black">
-        <!-- 
-            style="display: none; background-color: white; position: fixed;
-            bottom: 0; width: 100%; height: 90px; text-align: center;"> -->
-        <!--<div id="dummy-ad"
-            style="background-color: white; position: fixed;
-            bottom: 0; width: 100%; height: 90px; text-align: center;">
-            <h1 style="font-family: 'Arial';">ADVERTISEMENT<h1>-->
-        </div>
         <script>
-var LOGIN_ERROR = 1;
-var LOGIN_CANCEL = 2;
-var LOGIN_SUCCES = 3;
-
-var SOCIAL; // FIXME needs to be loaded before it's used.
-var PLATFORM;
-var INTERSTITIAL = {
-    intrst: null,
-    countdown: 0,
-    countdownLen: 50,
-
-    createFrom: function (intrst) {
-        this.fade = GAME.add.graphics(0, 0);
-        this.fade.visible = false;
-
-        intrst.on("load", function(){
-           console.log("loaded interstitial");
-        });
-        intrst.on("fail", function(e){
-           console.log("interst failed to load: "+JSON.stringify(e.message));
-        });
-        intrst.on("show", function(){
-           console.log("interst shown a modal content");
-        });
-        intrst.on("dismiss", function(){
-           console.log("interst dismissed the modal content");
-        });
-        intrst.on("click", function(){
-           console.log("interst clicked");
-        });
-        intrst.load();
-        this.intrst = intrst;
-    },
-
-    prepare: function () {
-        if (this.intrst && this.intrst.isReady() && this.countdown == 0) {
-            this.countdown = this.countdownLen;
-            this.fade.visible = true;
-        }
-    },
-
-    update: function () {
-        if (this.countdown > 0) {
-            this.fade.alpha = 1 - this.countdown/this.countdownLen;
-
-            this.countdown--;
-
-            // We show the ad just a bit before we finish fading because it
-            // takes a small amount of time for the ad to load.
-            if (this.countdown == 5) {
-                this.show();
-            }
-            if (this.countdown == 0) {
-                this.fade.visible = false;
-            }
-        }
-    },
-
-    show: function () {
-        if (this.intrst && this.intrst.isReady()) {
-            this.interst.show();
-            this.interst.load();
-        }
-    },
-};
-
-var PLAY_LEADERBOARD_ID = "";
-var testDeviceIds = {
-    "F8E53637-5D67-4423-8261-48A3A9B8DB29": true,
-};
-
+var FAKE_MOBILE = true;
 var AD_HEIGHT = 0;
+var CONFIG = {
+    testDeviceIds: {
+        "F8E53637-5D67-4423-8261-48A3A9B8DB29": true,
+        "941aa3573ab4e6b": true,
+    },
+    iaps: {
+        ios: {
+            removeAds: "",
+        },
+        andr: {
+            removeAds: "",
+        },
+    },
+    achvs: {
+        ios: {
+        },
+        andr: {
+        },
+    },
+    ldbds: {
+        ios: {
+            default: "",
+        },
+        andr: {
+            default: "",
+        },
+    },
+    // Banner config - e.g. position (top, bottom, none), size, etc.
+};
+var GAME;
 
 var initApi = function (cocoon, adIds) {
-    var banner, interst, game, g;
-    var testAds = function () {};
+    var banner, interst, game, fadeG;
 
-    PLATFORM = cocoon.getPlatform();
+    var refreshFade = function (g) {
+        fadeG.clear();
+        fadeG.beginFill(0);
+        fadeG.drawRect(0, 0, DIMS.game.outer.width, DIMS.game.outer.height);
+        fadeG.endFill();
+        fadeG.visible = false;
+    }
+
+    var initAds = function () {
+        fadeG = GAME.add.graphics(0, 0);
+        refreshFade(fadeG);
+    };
+    var refreshAds = function () {
+        refreshFade(fadeG);
+    };
 
     AD_HEIGHT = 90;
-    if (PLATFORM === 'ios') {
-        AD_HEIGHT *= window.devicePixelRatio;
+    if (typeof(cocoon) !== 'undefined') {
+        console.log("Device UUID: "+device.uuid);
+
+        var platform = cocoon.getPlatform();
+        if (platform === 'ios') {
+            AD_HEIGHT *= window.devicePixelRatio;
+        }
     }
-    onResize();
+    if (GAME) {
+        onResize();
+    }
 
-    // TODO CHECK PURCHASES
+    if (typeof(cocoon) === 'undefined' || DEBUGGING || CONFIG.testDeviceIds[device.uuid]) {
+        var bannerG, interstGrp, interstG;
 
-    if (DEBUGGING || testDeviceIds[device.uuid]) {
-        var visible = true;
-        testAds = function (reload) {
-            if (reload) {
-                g.clear();
-            } else {
-                g = GAME.add.graphics(0, 0);
-            }
+        var refreshBanner = function (g) {
+            g.clear();
             g.beginFill(0xffffff);
             var h = AD_HEIGHT/DIMS.ratio;
             g.drawRect(0, DIMS.game.outer.height-h, DIMS.game.outer.width, h);
             g.endFill();
-            g.visible = visible;
-        }
+        };
+
+        var interstExit;
+        var interstText;
+
+        var refreshInterst = function (g) {
+            g.clear();
+            g.beginFill(0xffffff);
+            g.drawRect(0, 0, DIMS.game.outer.width, DIMS.game.outer.height);
+            g.endFill();
+
+            interstExit.x = DIMS.game.outer.width-50;
+            interstExit.y = 50;
+
+            interstText.x = DIMS.game.outer.width/2;
+            interstText.y = DIMS.game.outer.height/2;
+        };
+
+        var initAds_ = initAds;
+        initAds = function () {
+            bannerG = GAME.add.graphics(0, 0);
+            refreshBanner(bannerG);
+
+            interstGrp = GAME.add.group();
+            interstGrp.visible = false;
+
+            interstG = GAME.add.graphics(0, 0);
+            interstGrp.add(interstG);
+
+            interstExit = GAME.add.text(DIMS.game.outer.width-50, 50, 'X', {
+                font: '50px Arial',
+                fill: '#000000',
+            }, interstGrp);
+            interstExit.anchor.setTo(1, 0);
+            interstExit.inputEnabled = true;
+            interstExit.events.onInputDown.add(function () {
+                interstGrp.visible = false;
+            });
+
+            interstText = GAME.add.text(DIMS.game.outer.width/2, DIMS.game.outer.height/2, 'INTERSTITIAL', {
+                font: '50px Arial',
+                fill: '#000000',
+            }, interstGrp);
+            interstText.anchor.setTo(0.5);
+            refreshInterst(interstG);
+
+            // At the end so that fade created in `initAds_` is on top of all
+            // other elements.
+            initAds_();
+        };
+
+        var refreshAds_ = refreshAds;
+        refreshAds = function () {
+            refreshAds_();
+            refreshBanner(bannerG);
+            refreshInterst(interstG);
+        };
+
         banner = {
             load: function () {
                 this.show();
             },
             hide: function () {
-                visible = false;
-                if (g) {
-                    g.visible = visible;
-                }
+                this.change(false);
             },
             show: function () {
-                visible = true;
-                if (g) {
-                    g.visible = visible;
+                this.change(true);
+            },
+            change: function (visible) {
+                if (bannerG) {
+                    bannerG.visible = visible;
                 }
+                if (interstG) {
+                    interstG.visible = visible;
+                }
+                onResize();
+            },
+        };
+
+        interst = {
+            load: function () {
+            },
+            show: function () {
+                interstGrp.visible = true;
             },
         };
     } else {
@@ -179,32 +213,67 @@ var initApi = function (cocoon, adIds) {
                 console.error("interstitial failure: "+JSON.stringify(e.message));
             }
         });
-        var FADE_DURATION = 50;
         interst.load();
 
-        if (PLATFORM === 'android') {
+        if (platform === 'android') {
             cocoon.Social.GooglePlayGames.init(
                 {
-                    defaultLeaderboard: PLAY_LEADERBOARD_ID,
+                    defaultLeaderboard: CONFIG.playLeaderboardId,
                 },
                 function() {
                     console.log('GooglePlayGames initialised');
                 }
             );
             game = cocoon.Social.GooglePlayGames.getSocialInterface();
-        } else if (PLATFORM === 'android') {
+        } else if (platform === 'android') {
             cocoon.Social.GameCenter.init();
             game = cocoon.Social.GameCenter.getSocialInterface();
         }
     }
 
-    banner.load();
-    // interst.load();
+    // TODO
+    if (load('adsRemoved') !== null/* || iapSvc.isPurchased(iaps.removeAds)*/) {
+        banner.load();
+        interst.load();
+    }
+
+    var removeAds = function () {
+        // TODO session
+        banner.hide();
+        AD_HEIGHT = 0;
+        onResize();
+        // TODO persist
+    };
+
+    var showInterst = interst.show;
+    var fadeDuration = 20;
+    var fade = 0;
+    interst.show = function () {
+        fade = fadeDuration;
+    };
 
     return {
-        testAds: testAds,
+        ads: {
+            init: initAds,
+            refresh: refreshAds,
+            update: function () {
+                if (fade > 0) {
+                    fadeG.visible = true;
+                    fadeG.alpha = 1 - (fade/fadeDuration);
+                    fade--;
+                    if (fade == 3) {
+                        showInterst();
+                    }
+                    if (fade == 0) {
+                        fadeG.visible = false;
+                    }
+                }
+            },
+            remove: removeAds,
+        },
         game: game,
-        interst: {
+        interst: interst,
+        /* interst: {
             create: function () {
                 var fade = GAME.add.graphics(0, 0);
                 fade.visible = false;
@@ -235,7 +304,8 @@ var initApi = function (cocoon, adIds) {
                     }
                 }
             },
-        }
+        },
+            */
     };
 };
 
@@ -246,15 +316,30 @@ var initApi = function (cocoon, adIds) {
 // var Browser = // all blank, unsupported messages
 
 // http://damien.antipa.at/blog/2014/02/08/3-ways-to-detect-that-your-application-is-running-in-cordova-slash-phonegap/
-var FAKE_MOBILE = true;
-var CORDOVA = !!window.cordova;
+var IS_MOBILE = FAKE_MOBILE || !!window.cordova;
 var API = { // Web version
     plat: 'web',
+    ads: {
+        showTest: function () {},
+        remove: function () {},
+    },
     // game: ,
 };
 
-var API;
-if (CORDOVA) {
+var API = {
+    platform: 'web',
+    ads: {
+        init: function () {},
+        refresh: function () {},
+        update: function () {},
+        remove: function () {},
+    },
+    interst: {
+        show: function () {}
+    },
+};
+
+if (!!window.cordova) {
     document.addEventListener("deviceready", function() {
         API = initApi(Cocoon, {
             ios: {
@@ -295,14 +380,11 @@ if (CORDOVA) {
         loadState.start();
     });
 } else if (FAKE_MOBILE) {
+    // Use dummy impl from above
     // impl dummy game, purchase
     // TODO Check if purchased.
-    BANNER.show();
-} else {
-    BANNER.show = function () {};
-    loadState.start();
+    API = initApi();
 }
-
         </script>
         <!--<div style="width: 50%; height: 300px;" id="cvs"></div>-->
         <script type="text/javascript">
@@ -319,7 +401,7 @@ scrnDim.adHeight = AD_HEIGHT;
 // var DIMS = scale({width: 640, height: 920}, scrnDim);
 var DIMS = scale({width: 640, height: 920}, scrnDim);
 
-var GAME = new Phaser.Game(
+GAME = new Phaser.Game(
     DIMS.game.outer.width,
     DIMS.game.outer.height,
     // AUTO causes shrink in Canvas+.

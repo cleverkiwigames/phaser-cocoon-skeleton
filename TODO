@@ -1,0 +1,12 @@
+* Minify/uglify as part of build
+* Cocoon dummy banner ads
+* Cocoon dummy interstitial ads
+* Set debug on test device
+* Ad hiding/screen resizing on purchase
+* Pretend mobile on desktop
+* Check purchases before displaying ads
+* Restore purchases
+* Kongregate build
+* No interstitials when ads disabled
+* Test delay between interstitials
+* No fade when interstitial not ready

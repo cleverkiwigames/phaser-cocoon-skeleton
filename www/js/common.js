@@ -102,15 +102,21 @@ function addText(x, y, text, size, colour) {
 }
 
 function saveProgress(p) {
-    window.localStorage.setItem('progress', JSON.stringify(p));
+    save('progress', p);
+}
+
+function save(key, x) {
+    window.localStorage.setItem(key, JSON.stringify(x));
 }
 
 function loadProgress() {
-    var progress = window.localStorage.getItem('progress');
-    if (progress === null) {
-        return {};
-    }
-    return JSON.parse(progress);
+    var p = load('progress');
+    return p === null ? {} : p;
+}
+
+function load(key) {
+    var x = window.localStorage.getItem(key);
+    return x === null ? null : JSON.parse(x);
 }
 
 function startState(state, extra) {
